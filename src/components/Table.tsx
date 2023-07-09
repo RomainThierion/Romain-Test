@@ -1,14 +1,36 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
+import { SymbolItemProps } from "./Dashboard";
 
-export const Table = ({ symbolItem }) => {
-  const [ticker24hr, setTicker24hr] = useState([]);
-  const [trades, setTrades] = useState([]);
-  const [filter, setFilter] = useState();
-  const [filteredTrades, setFilteredTrades] = useState([]);
+interface Trade {
+  id: number;
+  price: number;
+  qty: number;
+  quoteQty: number;
+  time: number;
+}
 
-  const filterList = [
+interface Ticker24hr {
+  priceChangePercent: number;
+}
+
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  symbolItem: SymbolItemProps;
+}
+
+export const Table = ({ symbolItem }: Props) => {
+  const [ticker24hr, setTicker24hr] = useState<Ticker24hr | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [filter, setFilter] = useState<string | undefined>();
+  const [filteredTrades, setFilteredTrades] = useState<Trade[]>([]);
+
+  const filterList: FilterOption[] = [
     { label: "Lowest price", value: "lowestPrice" },
     { label: "Highest price", value: "highestPrice" },
     { label: "Lowest quantity", value: "lowestQuantity" },
@@ -17,20 +39,21 @@ export const Table = ({ symbolItem }) => {
     { label: "Oldest", value: "oldest" },
   ];
 
+  // Get 24hr tickers and last trades
   useEffect(() => {
     const axiosTrades = axios.get("https://api.binance.com/api/v3/trades", {
-      params: { symbol: symbolItem.label, limit: 10 },
+      params: { symbol: symbolItem.label as string, limit: 10 },
     });
 
     const axios24hr = axios.get("https://api.binance.com/api/v3/ticker/24hr", {
-      params: { symbol: symbolItem.label },
+      params: { symbol: symbolItem.label as string },
     });
 
     axios
       .all([axiosTrades, axios24hr])
       .then(([resTrades, res24hr]) => {
-        setTrades(resTrades.data);
-        setTicker24hr(res24hr.data);
+        setTrades(resTrades.data as Trade[]);
+        setTicker24hr(res24hr.data as Ticker24hr);
       })
       .catch((err) => {
         console.error("Error fetching symbols:", err);
@@ -81,7 +104,7 @@ export const Table = ({ symbolItem }) => {
           classNamePrefix='select'
           name='search-currency-pair'
           options={filterList}
-          onChange={(selectedFilter) => setFilter(selectedFilter.value)}
+          onChange={(selectedFilter) => setFilter(selectedFilter!.value)}
         />
       </div>
       <table>
@@ -96,28 +119,24 @@ export const Table = ({ symbolItem }) => {
         </thead>
         <tbody>
           {filter
-            ? filteredTrades.map((trade) => {
-                return (
-                  <tr key={trade.id}>
-                    <td>{trade.id}</td>
-                    <td>{trade.price}</td>
-                    <td>{trade.qty}</td>
-                    <td>{trade.quoteQty}</td>
-                    <td>{trade.time}</td>
-                  </tr>
-                );
-              })
-            : trades.map((trade) => {
-                return (
-                  <tr key={trade.id}>
-                    <td>{trade.id}</td>
-                    <td>{trade.price}</td>
-                    <td>{trade.qty}</td>
-                    <td>{trade.quoteQty}</td>
-                    <td>{trade.time}</td>
-                  </tr>
-                );
-              })}
+            ? filteredTrades.map((trade) => (
+                <tr key={trade.id}>
+                  <td>{trade.id}</td>
+                  <td>{trade.price}</td>
+                  <td>{trade.qty}</td>
+                  <td>{trade.quoteQty}</td>
+                  <td>{trade.time}</td>
+                </tr>
+              ))
+            : trades.map((trade) => (
+                <tr key={trade.id}>
+                  <td>{trade.id}</td>
+                  <td>{trade.price}</td>
+                  <td>{trade.qty}</td>
+                  <td>{trade.quoteQty}</td>
+                  <td>{trade.time}</td>
+                </tr>
+              ))}
         </tbody>
       </table>
     </>
