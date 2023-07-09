@@ -37,6 +37,8 @@ export const Dashboard = (): JSX.Element => {
     })
   );
 
+  console.log(getMappedCurrencyPairs);
+
   return (
     <>
       <div>
@@ -66,7 +68,7 @@ export const Dashboard = (): JSX.Element => {
         </button>
       </div>
 
-      {validatedPair && <Table symbol={validatedPair} />}
+      {validatedPair && <Table symbolItem={validatedPair} />}
     </>
   );
 };
