@@ -2,6 +2,10 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import { SymbolItemProps } from "./Dashboard";
+import { PositiveTicker, NegativeTicker } from "../styles/Ticker";
+import { OrderList, Td, Th, Tr } from "../styles/OrderList";
+import { TickerWrapper } from "../styles/TickerWrapper";
+import moment from "moment";
 
 interface Trade {
   id: number;
@@ -24,7 +28,7 @@ interface Props {
   symbolItem: SymbolItemProps;
 }
 
-export const Table = ({ symbolItem }: Props) => {
+export const Table = ({ symbolItem }: Props): JSX.Element => {
   const [ticker24hr, setTicker24hr] = useState<Ticker24hr | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [filter, setFilter] = useState<string | undefined>();
@@ -94,51 +98,90 @@ export const Table = ({ symbolItem }: Props) => {
 
   return (
     <>
-      <h3>{symbolItem && symbolItem.label}</h3>
-      <div>Ticker: {symbolItem && symbolItem.price}%</div>
-      <div>24H Ticker: {ticker24hr && ticker24hr.priceChangePercent}%</div>
+      <h2>{symbolItem && symbolItem.label}</h2>
+      <TickerWrapper>
+        {symbolItem && symbolItem.price && parseInt(symbolItem.price) > 0 ? (
+          <div>
+            <h3>Ticker</h3>
+            <PositiveTicker>{symbolItem && symbolItem.price}%</PositiveTicker>
+          </div>
+        ) : (
+          <div>
+            <h3>Ticker</h3>
+            <NegativeTicker>{symbolItem && symbolItem.price}%</NegativeTicker>
+          </div>
+        )}
+
+        {ticker24hr && ticker24hr.priceChangePercent > 0 ? (
+          <div>
+            <h3>24H Ticker</h3>
+            <PositiveTicker>
+              {ticker24hr && ticker24hr.priceChangePercent}%
+            </PositiveTicker>
+          </div>
+        ) : (
+          <div>
+            <h3>24H Ticker</h3>
+            <NegativeTicker>
+              {ticker24hr && ticker24hr.priceChangePercent}%
+            </NegativeTicker>
+          </div>
+        )}
+      </TickerWrapper>
+
       <div>
         <h3>Filter by</h3>
         <Select
-          className='search-currency-pair'
-          classNamePrefix='select'
-          name='search-currency-pair'
+          styles={{
+            control: (baseStyles) => ({
+              ...baseStyles,
+              width: "400px",
+              margin: "auto",
+            }),
+          }}
+          name='filter'
           options={filterList}
           onChange={(selectedFilter) => setFilter(selectedFilter!.value)}
         />
       </div>
-      <table>
+
+      <h2>Recent trades</h2>
+      <OrderList>
         <thead>
-          <tr>
-            <th>Id</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Quote Quantity</th>
-            <th>Time</th>
-          </tr>
+          <Tr>
+            <Th>Id</Th>
+            <Th>Price</Th>
+            <Th>Quantity</Th>
+            <Th>Quote Quantity</Th>
+            <Th>Time</Th>
+          </Tr>
         </thead>
         <tbody>
           {filter
             ? filteredTrades.map((trade) => (
-                <tr key={trade.id}>
-                  <td>{trade.id}</td>
-                  <td>{trade.price}</td>
-                  <td>{trade.qty}</td>
-                  <td>{trade.quoteQty}</td>
-                  <td>{trade.time}</td>
-                </tr>
+                <Tr key={trade.id}>
+                  <Td>{trade.id}</Td>
+                  <Td>{trade.price}</Td>
+                  <Td>{trade.qty}</Td>
+                  <Td>{trade.quoteQty}</Td>
+                  <Td>
+                    {moment(trade.time).format("MMMM Do YYYY, h:mm:ss a")}
+                  </Td>
+                </Tr>
               ))
             : trades.map((trade) => (
-                <tr key={trade.id}>
-                  <td>{trade.id}</td>
-                  <td>{trade.price}</td>
-                  <td>{trade.qty}</td>
-                  <td>{trade.quoteQty}</td>
-                  <td>{trade.time}</td>
-                </tr>
+                <Tr key={trade.id}>
+                  <Td>{trade.id}</Td>
+                  <Td>{trade.price}</Td>
+                  <Td>{trade.qty}</Td>
+                  <Td>{trade.quoteQty}</Td>
+                  <Td>
+                    {moment(trade.time).format("MMMM Do YYYY, h:mm:ss a")}
+                  </Td>
+                </Tr>
               ))}
         </tbody>
-      </table>
+      </OrderList>
     </>
   );
 };

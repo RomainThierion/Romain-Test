@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
 import { Table } from "./Table";
+import { Button } from "../styles/Button";
 
 export interface SymbolItemProps {
   label?: string;
@@ -41,15 +42,18 @@ export const Dashboard = (): JSX.Element => {
     })
   );
 
-  console.log(getMappedCurrencyPairs);
-
   return (
     <>
       <div>
-        <h2>Select the currency pair</h2>
+        <h2>Select a currency pair</h2>
         <Select
-          className='search-currency-pair'
-          classNamePrefix='select'
+          styles={{
+            control: (baseStyles) => ({
+              ...baseStyles,
+              margin: "auto",
+              width: "400px",
+            }),
+          }}
           isDisabled={isDisabled}
           isLoading={isLoading}
           isClearable={isClearable}
@@ -61,7 +65,7 @@ export const Dashboard = (): JSX.Element => {
           }
         />
 
-        <button
+        <Button
           onClick={() => {
             setValidatedPair(selectedPair);
             if (!selectedPair) {
@@ -70,7 +74,7 @@ export const Dashboard = (): JSX.Element => {
           }}
         >
           Search
-        </button>
+        </Button>
       </div>
 
       {validatedPair && <Table symbolItem={validatedPair} />}
